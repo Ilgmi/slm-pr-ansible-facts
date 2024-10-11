@@ -9,8 +9,3 @@ roles:
     scm: git
     version: 1.0.0
     name: basyx_server
-
-  - src: "git+https://github.com/Ilgmi/ansible_aas"
-    scm: git
-    version: "slm-update"
-    name: fabos.aas

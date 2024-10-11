@@ -6,24 +6,19 @@
       - (aas_id is defined) and (aas_id | length > 0)
 
 - name: Create AAS
-  fabos.aas.aas:
-    scheme: http
-    host: "{{ aas_server_host }}"
-    port: "{{ aas_server_port }}"
-    shell: "{{ aas }}"
-  retries: 5
+  ansible.builtin.uri:
+    url: "{{ aas_server_base_url }}/shells/{{ aas_id }}"
+    method: PUT
+    headers:
+      Content-Type: application/json
+    body_format: json
+    body: "{{ aas }}"
   register: create_aas_request
   when: force_create_ass | default(false)
   until: not create_aas_request.failed
 
 - name: Collection facts
   ansible.builtin.setup:
-
-- name: Convert facts to submodel
-  fabos.aas.convert_to_sm:
-    id: "{{ aas_id }}"
-    facts: "ansible-facts-{{ aas_id }}"
-  register: convert_result
 
 - name: Add Strings of Ansible Facts to Submodel Element List
   ansible.builtin.set_fact:
@@ -105,15 +100,6 @@
     body_format: json
     body: "{{ aas_submodel }}"
   delegate_to: localhost
-
-- name: Register submodel at repo
-  fabos.aas.submodel:
-    scheme: http
-    host: "{{ aas_env.host }}"
-    port: "{{ aas_env.port }}"
-    submodel: "{{ convert_result.submodel }}"
-    force: true
-  register: register_sm
 
 # Only required if server does not register submodel automatically:
 - name: Register submodel descriptor at registry
